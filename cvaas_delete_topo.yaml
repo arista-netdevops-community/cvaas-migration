@@ -1,0 +1,30 @@
+---
+- name: Collect facts
+  hosts: cv_server
+  connection: local
+  gather_facts: no
+  vars:
+    cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken
+    cvaas_token: "{{lookup('file', '/Users/tamas/tokens/cvaas.tok')}}"
+    cvp_device_api: "https://10.83.12.79/cvpservice/inventory/devices?provisioned=true"
+    cvp_token: "{{lookup('file', '/Users/tamas/tokens/go79.tok')}}"
+  tasks:
+  - name: 'Collect devices facts from {{inventory_hostname}}'
+    tags: [facts]
+    arista.cvp.cv_facts_v3:
+      facts:
+        - containers
+    register: facts_devices
+- name: Cleanup on CVaaS
+  hosts: cvaas
+  connection: local
+  gather_facts: no
+  tasks:
+  # - name: "Push config to {{inventory_hostname}}"
+  #   arista.cvp.cv_configlet_v3:
+  #     configlets: "{{hostvars['cv_server'].facts_devices.data.cvp_configlets}}"
+  #     state: present
+  - name: "Generate container hierarchy"
+    arista.cvp.cv_container_v3:
+      topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
+      state: absent
