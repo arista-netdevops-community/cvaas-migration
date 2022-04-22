@@ -48,6 +48,6 @@ This is a proof-of-concept demo, highly recommended to take a backup before runn
 
 ## TO-DO
 
-- update the configlet with the CVaaS TA config
+- parametrize things
 
 First attempt can be watched on [youtube](https://www.youtube.com/watch?v=-eOfa5DxQPo)

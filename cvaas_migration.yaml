@@ -136,18 +136,41 @@
   hosts: cvaas
   connection: local
   gather_facts: no
+  vars:
+    CVP_CONFIGLETS:
+      terminattr_config_cvaas: |
+        daemon TerminAttr
+          exec /usr/bin/TerminAttr -cvaddr=apiserver.cv-staging.corp.arista.io:443 -cvcompression=gzip -cvvrf=MGMT -taillogs -cvauth=token-secure,/tmp/cv-onboarding-token -smashexcludes=ale,flexCounter,hardware,kni,pulse,strata -ingestexclude=/Sysdb/cell/1/agent,/Sysdb/cell/2/agent -cvgnmi
+          no shutdown
   tasks:
   - name: "Push config to {{inventory_hostname}}"
     arista.cvp.cv_configlet_v3:
       configlets: "{{hostvars['cv_server'].facts_devices.data.cvp_configlets}}"
       state: present
     delegate_to: cvaas
+  - name: "Push new TerminAttr configlet"
+    arista.cvp.cv_configlet_v3:
+      configlets: "{{CVP_CONFIGLETS}}"
+      state: present
+    delegate_to: cvaas
+  - name: "Uppend TerminAttr config to device facts"
+    set_fact:
+      new_devices_var: |
+        {% set res = hostvars['cv_server'].facts_devices.data.cvp_devices -%}
+        {% for device in res -%}
+        {%     do device.configlets.append("terminattr_config_cvaas") -%}
+        {%- endfor %}
+        {{ res }}
   - name: "Generate container hierarchy"
     arista.cvp.cv_container_v3:
       topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
       state: present
   - name: "Move devices to target containers"
     arista.cvp.cv_device_v3:
-      devices: "{{hostvars['cv_server'].facts_devices.data.cvp_devices}}"
+      devices: "{{new_devices_var}}"
       state: present
     delegate_to: cvaas
+  - name: "Upload new TerminAttr configlet"
+    arista.cvp.cv_configlets_v3:
+        configlets: "{{CVP_CONFIGLETS}}"
+        state: present
