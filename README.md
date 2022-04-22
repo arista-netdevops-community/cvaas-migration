@@ -10,6 +10,7 @@ The `cvaas_migration.yaml` playbook does the following:
 - pushes all the configlets from on-prem to CVaaS
 - creates the container hierarchy (learned from the on-prem facts)
 - moves the devices to their target container and applies the configlets
+- creates a new TerminAttr configlet pointing to CVaaS and appends it to the list of configlets for each device
 
 ## Prerequisites
 
@@ -34,20 +35,22 @@ The token should be copied and saved to a file that can later be referred to, in
 
 3. Go to CVaaS UI and generate the TerminAttr config and update the playbook under the `"Configuring TerminAttr on {{ inventory_hostname }}"` task
 
-4. Update the `./inventory/inventory79.yaml` file with the right credentials and IPs/FQDNs
+4. Update the `./inventory/inventory.yaml` file with the right credentials and IPs/FQDNs
 
 > NOTE the `./inventory/onprem_devices.yaml` is created on the fly, it does not need to be created by hand.
 
-5. Update `ansible.cfg` to point to the right folders for your `collections_paths`
+5. Update `ansible.cfg` to point to the right folders for your `collections_paths` or just install ansible-cvp using ansible-galaxy and use that instead.
 
-6. Finally run it as `ansible-playbook cvaas_migration.yaml -i inventory`
+6. Finally run it as `ansible-playbook cvaas_migration.yaml -i inventory --skip-tags debug`
 
 ## Disclaimer
 
 This is a proof-of-concept demo, highly recommended to take a backup before running the playbook.
 
+
 ## TO-DO
 
-- parametrize things
+- parametrize more things
+- Save configlets and containers to `cv_facts` dir as well
 
-First attempt can be watched on [youtube](https://www.youtube.com/watch?v=-eOfa5DxQPo)
+End to end example can be watched at [youtube](https://www.youtube.com/watch?v=rN6meAtXqss)

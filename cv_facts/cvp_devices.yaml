@@ -1,0 +1,62 @@
+---
+-   configlets:
+    - tp-avd_tp-avd-leaf3
+    - SelfSignedSSLProfile_8520AF39790A4EC959550166DC5DEADE_1
+    - SelfSignedSSLProfile
+    fqdn: tp-avd-leaf3
+    hostname: tp-avd-leaf3
+    ipAddress: 10.83.13.216
+    parentContainerName: TP_LEAF2
+    serialNumber: 8520AF39790A4EC959550166DC5DEADE
+    systemMacAddress: 50:08:00:60:c6:76
+-   configlets:
+    - SelfSignedSSLProfile
+    - SelfSignedSSLProfile_BAD032986065E8DC14CBB6472EC314A6_1
+    - tp-avd_tp-avd-leaf1
+    fqdn: tp-avd-leaf1
+    hostname: tp-avd-leaf1
+    ipAddress: 10.83.13.214
+    parentContainerName: TP_LEAF1
+    serialNumber: BAD032986065E8DC14CBB6472EC314A6
+    systemMacAddress: 50:08:00:a7:ca:c3
+-   configlets:
+    - SelfSignedSSLProfile_CD0EADBEEA126915EA78E0FB4DC776CA_1
+    - tp-avd_tp-avd-spine1
+    - SelfSignedSSLProfile
+    fqdn: tp-avd-spine1
+    hostname: tp-avd-spine1
+    ipAddress: 10.83.13.212
+    parentContainerName: TP_SPINES
+    serialNumber: CD0EADBEEA126915EA78E0FB4DC776CA
+    systemMacAddress: 50:08:00:8b:ee:b1
+-   configlets:
+    - tp-avd_tp-avd-leaf2
+    - SelfSignedSSLProfile_0123F2E4462997EB155B7C50EC148767_1
+    - SelfSignedSSLProfile
+    fqdn: tp-avd-leaf2
+    hostname: tp-avd-leaf2
+    ipAddress: 10.83.13.215
+    parentContainerName: TP_LEAF1
+    serialNumber: 0123F2E4462997EB155B7C50EC148767
+    systemMacAddress: 50:08:00:b1:5b:0b
+-   configlets:
+    - tp-avd_tp-avd-spine2
+    - SelfSignedSSLProfile_2568DB4A33177968A78C4FD5A8232159_1
+    - SelfSignedSSLProfile
+    fqdn: tp-avd-spine2
+    hostname: tp-avd-spine2
+    ipAddress: 10.83.13.213
+    parentContainerName: TP_SPINES
+    serialNumber: 2568DB4A33177968A78C4FD5A8232159
+    systemMacAddress: 50:08:00:8c:22:49
+-   configlets:
+    - tp-avd_tp-avd-leaf4
+    - SelfSignedSSLProfile_6323DA7D2B542B5D09630F87351BEA41_1
+    - SelfSignedSSLProfile
+    fqdn: tp-avd-leaf4
+    hostname: tp-avd-leaf4
+    ipAddress: 10.83.13.217
+    parentContainerName: TP_LEAF2
+    serialNumber: 6323DA7D2B542B5D09630F87351BEA41
+    systemMacAddress: 50:08:00:25:9d:36
+...

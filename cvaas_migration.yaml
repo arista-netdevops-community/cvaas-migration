@@ -18,7 +18,7 @@
         - containers
     register: facts_devices
   - name: "Printing facts from {{inventory_hostname}}"
-    tags: [facts]
+    tags: [debug]
     debug:
       msg: "{{facts_devices.data.cvp_containers}}"
     delegate_to: localhost
@@ -113,14 +113,27 @@
         - "shut"
         - "no shut"
 
-- name: generating file
+- name: Backing up CVP Facts
   hosts: localhost
   connection: local
   vars:
-      cv_facts_dir: "./cv_facts_dir"
+    cv_facts_dir: "cv_facts"
+    documentation_dir: "documentation"
   tasks:
+  - name: Create required output directories if not present
+    tags: [build, provision]
+
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: 0775
+    loop:
+      - "{{ documentation_dir }}"
+      - "{{ cv_facts_dir }}"
+    delegate_to: localhost
+    run_once: true
   - name: "Printing facts from {{inventory_hostname}}"
-    tags: [facts]
+    tags: [debug]
     debug:
       msg: "{{hostvars['cv_server'].facts_devices.data.cvp_devices }}"
     delegate_to: localhost
@@ -128,7 +141,7 @@
   - name: "Writing on-prem facts from {{inventory_hostname}} to files"
     tags: [facts]
     copy:
-      content: "{{hostvars['cv_server'].facts_devices.data.cvp_devices |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
+      content: "{{ hostvars['cv_server'].facts_devices.data.cvp_devices |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
       dest: "{{ cv_facts_dir }}/cvp_devices.yaml"
     delegate_to: localhost
 
@@ -153,7 +166,7 @@
       configlets: "{{CVP_CONFIGLETS}}"
       state: present
     delegate_to: cvaas
-  - name: "Uppend TerminAttr config to device facts"
+  - name: "Append TerminAttr config to device facts"
     set_fact:
       new_devices_var: |
         {% set res = hostvars['cv_server'].facts_devices.data.cvp_devices -%}
@@ -170,7 +183,3 @@
       devices: "{{new_devices_var}}"
       state: present
     delegate_to: cvaas
-  - name: "Upload new TerminAttr configlet"
-    arista.cvp.cv_configlets_v3:
-        configlets: "{{CVP_CONFIGLETS}}"
-        state: present
