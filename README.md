@@ -18,6 +18,12 @@ The `cvaas_migration.yaml` playbook does the following:
 - [ansible-cvp](https://cvp.avd.sh)
 - [cvprac 1.0.7+](https://github.com/aristanetworks/cvprac/tree/develop/docs/labs)
 - scp (`pip install scp`)
+- all devices must have internet connectivity 
+
+```shell
+ping vrf MGMT apiserver.cv-staging.corp.arista.io
+ping vrf MGMT www.cv-staging.corp.arista.io
+```
 
 ## Steps
 
@@ -34,6 +40,7 @@ The token should be copied and saved to a file that can later be referred to, in
 >NOTE if you choose different names for your tokens then make sure to update your playbook
 
 3. Go to CVaaS UI and generate the TerminAttr config and update the playbook under the `"Configuring TerminAttr on {{ inventory_hostname }}"` task
+and under `terminattr_config_cvaas` variable
 
 4. Update the `./inventory/inventory.yaml` file with the right credentials and IPs/FQDNs
 
@@ -51,6 +58,5 @@ This is a proof-of-concept demo, highly recommended to take a backup before runn
 ## TO-DO
 
 - parametrize more things
-- Save configlets and containers to `cv_facts` dir as well
 
 End to end example can be watched at [youtube](https://www.youtube.com/watch?v=rN6meAtXqss)

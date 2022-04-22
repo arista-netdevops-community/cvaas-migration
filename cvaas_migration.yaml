@@ -1,5 +1,7 @@
+# This playbook is aimed to migrate all the devices, configlets and containers from an on-prem CVP to CVaaS
+# Author: Tamas Plugor - EMEA
 ---
-- name: Migrate to CVaaS
+- name: "Fetch CV on-prem device inventory and generate CVaaS onboarding token"
   hosts: cv_server
   connection: local
   gather_facts: no
@@ -122,7 +124,6 @@
   tasks:
   - name: Create required output directories if not present
     tags: [build, provision]
-
     file:
       path: "{{ item }}"
       state: directory
@@ -138,14 +139,26 @@
       msg: "{{hostvars['cv_server'].facts_devices.data.cvp_devices }}"
     delegate_to: localhost
 
-  - name: "Writing on-prem facts from {{inventory_hostname}} to files"
+  - name: "Writing on-prem device facts from {{inventory_hostname}} to file"
     tags: [facts]
     copy:
       content: "{{ hostvars['cv_server'].facts_devices.data.cvp_devices |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
       dest: "{{ cv_facts_dir }}/cvp_devices.yaml"
     delegate_to: localhost
+  - name: "Writing on-prem container facts from {{inventory_hostname}} to file"
+    tags: [facts]
+    copy:
+      content: "{{ hostvars['cv_server'].facts_devices.data.cvp_containers |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
+      dest: "{{ cv_facts_dir }}/cvp_containers.yaml"
+    delegate_to: localhost
+  - name: "Writing on-prem configlet facts from {{inventory_hostname}} to file"
+    tags: [facts]
+    copy:
+      content: "{{ hostvars['cv_server'].facts_devices.data.cvp_configlets |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
+      dest: "{{ cv_facts_dir }}/cvp_configlets.yaml"
+    delegate_to: localhost
 
-- name: CVaaS
+- name: "CVaaS - upload configlets, create container hierarchy, move devices to their target containers and assign configlets"
   hosts: cvaas
   connection: local
   gather_facts: no
@@ -178,7 +191,7 @@
     arista.cvp.cv_container_v3:
       topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
       state: present
-  - name: "Move devices to target containers"
+  - name: "Move devices to target containers and assign configlets"
     arista.cvp.cv_device_v3:
       devices: "{{new_devices_var}}"
       state: present
