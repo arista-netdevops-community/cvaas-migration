@@ -18,6 +18,8 @@ The `cvaas_migration.yaml` playbook does the following:
 - [ansible-cvp](https://cvp.avd.sh)
 - [cvprac 1.0.7+](https://github.com/aristanetworks/cvprac/tree/develop/docs/labs)
 - scp (`pip install scp`)
+- devices should run TerminAttr 1.15.3 (CVaaS requirement)
+- devices should run EOS 4.23+ for non-prod clusters and 4.22+ for prod clusters (CVaaS requirement)
 - all devices must have internet connectivity 
 
 ```shell
@@ -58,5 +60,7 @@ This is a proof-of-concept demo, highly recommended to take a backup before runn
 ## TO-DO
 
 - parametrize more things
+- add TA config into a file
+- figure out why `search_key: serialNumber` doesn't work
 
 End to end example can be watched at [youtube](https://www.youtube.com/watch?v=rN6meAtXqss)
