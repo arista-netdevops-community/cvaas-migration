@@ -17,10 +17,10 @@ The `cvaas_migration.yaml` playbook does the following:
 - python3
 - [ansible-cvp](https://cvp.avd.sh)
 - [cvprac 1.0.7+](https://github.com/aristanetworks/cvprac/tree/develop/docs/labs)
-- scp (`pip install scp`)
+- scp (`pip install scp` or `pip3 install scp`) <-- Check with `pip --version` if it points to py2 or py3
 - devices should run TerminAttr 1.15.3 (CVaaS requirement)
 - devices should run EOS 4.23+ for non-prod clusters and 4.22+ for prod clusters (CVaaS requirement)
-- all devices must have internet connectivity 
+- all devices must have internet connectivity and be able to reach CVaaS, a quick ping test should be enough:
 
 ```shell
 ping vrf MGMT apiserver.cv-staging.corp.arista.io
@@ -44,9 +44,9 @@ The token should be copied and saved to a file that can later be referred to, in
 3. Go to CVaaS UI and generate the TerminAttr config and update the playbook under the `"Configuring TerminAttr on {{ inventory_hostname }}"` task
 and under `terminattr_config_cvaas` variable
 
-4. Update the `./inventory/inventory.yaml` file with the right credentials and IPs/FQDNs
+![terminattr_config_cvaas](./media/cvaas_ta_onboarding_config.png)
 
-> NOTE the `./inventory/onprem_devices.yaml` is created on the fly, it does not need to be created by hand.
+4. Update the `./inventory/inventory.yaml` file with the right credentials and IPs/FQDNs
 
 5. Update `ansible.cfg` to point to the right folders for your `collections_paths` or just install ansible-cvp using ansible-galaxy and use that instead.
 
