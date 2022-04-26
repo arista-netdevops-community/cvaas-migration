@@ -16,11 +16,13 @@ The `cvaas_migration.yaml` playbook does the following:
 
 - python3
 - [ansible-cvp](https://cvp.avd.sh)
+  - `$ ansible-galaxy collection install arista.cvp`
 - [cvprac 1.0.7+](https://github.com/aristanetworks/cvprac/tree/develop/docs/labs)
+  - Recommended cvprac 1.0.8+ (speed optimizations!)
 - scp (`pip install scp` or `pip3 install scp`) <-- Check with `pip --version` if it points to py2 or py3
 - devices should run TerminAttr 1.15.3 (CVaaS requirement)
 - devices should run EOS 4.23+ for non-prod clusters and 4.22+ for prod clusters (CVaaS requirement)
-- all devices must have internet connectivity and be able to reach CVaaS, a quick ping test should be enough:
+- all devices must have internet connectivity and be able to reach CVaaS, a quick ping test should be enough like below:
 
 ```shell
 ping vrf MGMT apiserver.cv-staging.corp.arista.io
@@ -42,7 +44,7 @@ The token should be copied and saved to a file that can later be referred to, in
 >NOTE if you choose different names for your tokens then make sure to update your playbook
 
 3. Go to CVaaS UI and generate the TerminAttr config and update the playbook under the `"Configuring TerminAttr on {{ inventory_hostname }}"` task
-and under `terminattr_config_cvaas` variable
+and inside the [terminattr.cfg](./terminattr.cfg) file
 
 ![terminattr_config_cvaas](./media/cvaas_ta_onboarding_config.png)
 
@@ -60,7 +62,6 @@ This is a proof-of-concept demo, highly recommended to take a backup before runn
 ## TO-DO
 
 - parametrize more things
-- add TA config into a file
 - figure out why `search_key: serialNumber` doesn't work
 
 End to end example can be watched at [youtube](https://www.youtube.com/watch?v=rN6meAtXqss)
