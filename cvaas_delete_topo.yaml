@@ -19,12 +19,34 @@
   hosts: cvaas
   connection: local
   gather_facts: no
+  vars:
+     CVP_CONTAINERS: 
+        TP_FABRIC:
+            configlets:
+            - SelfSignedSSLProfile
+            parentContainerName: Tenant
+        TP_LEAF1:
+            configlets: []
+            parentContainerName: TP_LEAFS
+        TP_LEAF2:
+            configlets: []
+            parentContainerName: TP_LEAFS
+        TP_LEAFS:
+            configlets: []
+            parentContainerName: TP_FABRIC
+        TP_SPINES:
+            configlets: []
+            parentContainerName: TP_FABRIC
   tasks:
   # - name: "Push config to {{inventory_hostname}}"
   #   arista.cvp.cv_configlet_v3:
   #     configlets: "{{hostvars['cv_server'].facts_devices.data.cvp_configlets}}"
   #     state: present
+  # - name: "Generate container hierarchy"
+  #   arista.cvp.cv_container_v3:
+  #     topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
+  #     state: absent
   - name: "Generate container hierarchy"
     arista.cvp.cv_container_v3:
-      topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
+      topology: "{{ CVP_CONTAINERS }}"
       state: absent

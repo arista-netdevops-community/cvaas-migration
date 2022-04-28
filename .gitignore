@@ -4,3 +4,4 @@ arista.cvp.debug*
 inventory/onprem_devices.yaml
 cv_facts/
 documentation/
+.DS_Store

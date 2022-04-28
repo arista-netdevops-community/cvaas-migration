@@ -1,0 +1,83 @@
+# This playbook is aimed to migrate all the devices, configlets and containers from an on-prem CVP to CVaaS
+# Author: Tamas Plugor - EMEA
+---
+- name: "Fetch CV on-prem device inventory and generate CVaaS onboarding token"
+  hosts: cv_server
+  connection: local
+  gather_facts: no
+  vars:
+    cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken # change the URL to the right CVaaS instance
+    cvaas_token: "{{lookup('env', 'CVAAS_TOKEN')}}"
+    cvp_device_api: "https://10.83.12.178/cvpservice/inventory/devices?provisioned=true" # change the IP to the right CVP On-prem instance
+    cvp_token: "{{lookup('env', 'ON_PREM_TOKEN')}}"
+  tasks:
+  - name: 'Collect devices facts from {{inventory_hostname}}'
+    tags: [facts, phase1]
+    arista.cvp.cv_facts_v3:
+      facts:
+        - devices
+        - configlets
+        - containers
+    register: facts_devices
+
+- name: Backing up CVP Facts
+  hosts: localhost
+  connection: local
+  vars:
+    cv_facts_dir: "cv_facts"
+    documentation_dir: "documentation"
+  tasks:
+  - name: Create required output directories if not present
+    tags: [build, provision]
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: 0775
+    loop:
+      - "{{ documentation_dir }}"
+      - "{{ cv_facts_dir }}"
+    delegate_to: localhost
+    run_once: true
+
+  - name: "Writing on-prem device facts from {{inventory_hostname}} to file"
+    tags: [facts]
+    copy:
+      content: "{{ hostvars['cv_server'].facts_devices.data.cvp_devices |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
+      dest: "{{ cv_facts_dir }}/cvp_devices.yaml"
+    delegate_to: localhost
+  - name: "Writing on-prem container facts from {{inventory_hostname}} to file"
+    tags: [facts]
+    copy:
+      content: "{{ hostvars['cv_server'].facts_devices.data.cvp_containers |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
+      dest: "{{ cv_facts_dir }}/cvp_containers.yaml"
+    delegate_to: localhost
+  - name: "Writing on-prem configlet facts from {{inventory_hostname}} to file"
+    tags: [facts]
+    copy:
+      content: "{{ hostvars['cv_server'].facts_devices.data.cvp_configlets |  to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
+      dest: "{{ cv_facts_dir }}/cvp_configlets.yaml"
+    delegate_to: localhost
+
+- name: "CVaaS - upload configlets, create container hierarchy, move devices to their target containers and assign configlets"
+  hosts: cvaas
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: "Push config to {{inventory_hostname}}"
+    tags: [cvaas, phase2]
+    arista.cvp.cv_configlet_v3:
+      configlets: "{{hostvars['cv_server'].facts_devices.data.cvp_configlets}}"
+      state: present
+    delegate_to: cvaas
+   - name: "Generate container hierarchy"
+    tags: [cvaas, phase2]
+    arista.cvp.cv_container_v3:
+      topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
+      state: present
+  - name: "Move devices to target containers and assign configlets"
+    tags: [cvaas, phase2]
+    arista.cvp.cv_device_v3:
+      devices: "{{new_devices_var}}"
+      state: present
+      search_key: fqdn
+    delegate_to: cvaas
