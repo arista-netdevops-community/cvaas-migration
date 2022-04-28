@@ -37,7 +37,7 @@ This example is more of a faster approach for lab environments
 
 1. Generate service account token on CVaaS ([steps](#how-to-generate-service-accounts))
 
-The token should be copied and saved to a file that can later be referred to, in this example it's in `/tokens/cvaas.tok`.
+> NOTE The token should be copied and saved to a file that can later be referred to, in this example it's in `/tokens/cvaas.tok`.
 
 2. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/go178.tok`)
 
@@ -69,7 +69,7 @@ This example is recommended for production.
 
 1. Generate service account token on CVaaS ([steps](#how-to-generate-service-accounts))
 
-The token should be copied and saved to a file that can later be referred to, in this example it's in `/tokens/cvaas.tok`.
+> NOTE The token should be copied and saved to a file that can later be referred to, in this example it's in `/tokens/cvaas.tok`.
 
 2. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/go178.tok`)
 
