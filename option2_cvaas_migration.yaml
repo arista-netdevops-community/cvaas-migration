@@ -69,11 +69,11 @@
       configlets: "{{hostvars['cv_server'].facts_devices.data.cvp_configlets}}"
       state: present
     delegate_to: cvaas
-   - name: "Generate container hierarchy"
+  - name: "Generate container hierarchy"
     tags: [cvaas, phase2]
     arista.cvp.cv_container_v3:
-      topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
-      state: present
+        topology: "{{hostvars['cv_server'].facts_devices.data.cvp_containers}}"
+        state: present
   - name: "Move devices to target containers and assign configlets"
     tags: [cvaas, phase2]
     arista.cvp.cv_device_v3:

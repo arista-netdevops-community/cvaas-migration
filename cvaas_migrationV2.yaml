@@ -44,13 +44,13 @@
     set_fact:
       device_inventory_list: "{{ device_inventory | join('\n') }}"
   - name: "Building temporary device inventory"
-    tags: [build, phase1]
+    tags: [build, phase1, devinv]
     copy:
       content: "{{ device_inventory_list }}"
       dest: "./inventory/onprem_devices.yaml"
     delegate_to: localhost
   - name: "Update on_prem_devices.yaml file with group tag..."
-    tags: [build, phase1]
+    tags: [build, phase1, devinv]
     lineinfile:
       path: "./inventory/onprem_devices.yaml"
       line: '[onprem_devices]'
