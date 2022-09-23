@@ -1,0 +1,131 @@
+---
+- name: "Fetch CV on-prem device inventory and generate CVaaS and CV onboarding tokens"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken # change the URL to the right CVaaS instance
+    cvaas_token: "{{lookup('env', 'CVAAS_TOKEN')}}"
+    cvp_device_api: "https://10.83.12.178/cvpservice/inventory/devices?provisioned=true" # change the IP to the right CVP On-prem instance
+    cvp_token: "{{lookup('env', 'ON_PREM_TOKEN')}}"
+    cvp_token_api: "https://10.83.12.178/cvpservice/enroll/createToken"
+  tasks:
+  - name: "Generating TerminAttr onboarding token on CVaaS instance"
+    tags: [build]
+    ansible.builtin.uri:
+      url: "{{ cvaas_api }}"
+      method: POST
+      headers:
+        Accept: "application/json"
+        Cookie: "access_token={{ cvaas_token }}"
+      validate_certs: no
+      return_content: yes
+      body: '{"enrollmentToken": {"reenrollDevices": ["*"], "validFor": "720h"}}'
+    register: cv_onboarding_token
+    until: cv_onboarding_token.status == 200
+    retries: 10
+    delay: 2
+  # Writing cvaas token to file
+  - name: "Parsing CVaaS token"
+    tags: [build]
+    set_fact:
+      cv_onboarding_token: "{{ cv_onboarding_token.content | list | join }}"
+  - name: "Writing CVaaS token to file"
+    tags: [build]
+    copy:
+      content: "{{ cv_onboarding_token[0].enrollmentToken.token }}"
+      dest: "./cv-onboarding-token"
+  - name: "Generating TerminAttr onboarding token on onprem instance"
+    tags: [build]
+    ansible.builtin.uri:
+      url: "{{ cvp_token_api }}"
+      method: POST
+      headers:
+        Accept: "application/json"
+        Cookie: "access_token={{ cvp_token }}"
+      validate_certs: no
+      return_content: yes
+      body: '{"reenrollDevices": ["*"], "duration": "720h"}'
+    register: token
+    until: token.status == 200
+    retries: 10
+    delay: 2
+  # Writing onprem token to file
+  - name: "Parsing CVP on-prem token"
+    tags: [build]
+    set_fact:
+      token: "{{ token.content | list | join }}"
+  - name: "Writing CVaaS token to file"
+    tags: [build]
+    copy:
+      content: "{{ token.data }}"
+      dest: "./token"
+
+# Build device inventory
+  - name: "Get Current Device Inventory Data From CVP REST API"
+    tags: [build]
+    ansible.builtin.uri:
+      url: "{{ cvp_device_api }}"
+      method: GET
+      headers:
+        Accept: "application/json"
+        Cookie: "access_token={{ cvp_token }}"
+      validate_certs: no
+      return_content: yes
+    register: current_cvp_devices_api_result
+    until: current_cvp_devices_api_result.status == 200
+    retries: 10
+    delay: 2
+  - name: "Building list of IP addresses"
+    tags: [build]
+    set_fact:
+      device_inventory: "{{ device_inventory | default([]) + [item.ipAddress] }}"
+    with_items: "{{ current_cvp_devices_api_result.content  }}"
+  - name: Concatenating device_inventory
+    tags: [build]
+    set_fact:
+      device_inventory_list: "{{ device_inventory | join('\n') }}"
+  - name: "Building temporary device inventory"
+    tags: [build]
+    copy:
+      content: "{{ device_inventory_list }}"
+      dest: "./inventory/onprem_devices.yaml"
+    delegate_to: localhost
+  - name: "Update on_prem_devices.yaml file with group tag..."
+    tags: [build]
+    lineinfile:
+      path: "./inventory/onprem_devices.yaml"
+      line: '[onprem_devices]'
+      insertbefore: BOF
+
+- hosts: on_prem_devices
+  vars:
+    ansible_user: cvpadmin
+    ansible_password: arastra
+    ansible_connection: network_cli
+    ansible_httpapi_use_ssl: True
+    ansible_httpapi_validate_certs: False
+    ansible_network_os: eos
+    ansible_httpapi_port: 443
+    ansible_python_interpreter: $(which python3) 
+  tasks:
+  - name: Copy on-prem token
+    tags: [deploy]
+    net_put:
+       src: "./token"
+       dest: "/tmp/token"
+  - name: Copy cvaas token
+    tags: [deploy]
+    net_put:
+       src: "./cv-onboarding-token"
+       dest: "/tmp/cv-onboarding-token"
+  - name: restart TerminAttr
+    tags: [deploy]
+    eos_command:
+      commands:
+        - "enable"
+        - "config"
+        - "daemon TerminAttr"
+        - "exec /usr/bin/TerminAttr -cvopt cvaas.addr=apiserver.cv-staging.corp.arista.io:443 -cvopt cvaas.auth=token-secure,/tmp/cv-onboarding-token -cvopt cvaas.vrf=MGMT  -cvopt dublin.addr=10.83.12.178:9910 -cvopt dublin.auth=token,/tmp/token -cvopt dublin.vrf=MGMT -cvgnmi -smashexcludes=ale,flexCounter,hardware,kni,pulse,strata -ingestexclude=/Sysdb/cell/1/agent,/Sysdb/cell/2/agent -taillogs"
+        - "shut"
+        - "no shut"
