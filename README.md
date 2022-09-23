@@ -14,12 +14,12 @@ The `cvaas_migration.yaml` playbook does the following:
 
 ## Prerequisites
 
-- python3
+- python3 3.8+
 - [ansible-cvp](https://cvp.avd.sh)
   - `$ ansible-galaxy collection install arista.cvp`
-- [cvprac 1.0.7+](https://github.com/aristanetworks/cvprac/): `pip install cvprac>=1.0.7`
-  - Recommended cvprac 1.0.8+ (speed optimizations!)
+- [Minimum cvprac 1.0.7, recommended 1.2.0+](https://github.com/aristanetworks/cvprac/): `pip install cvprac>=1.2.0`
 - scp (`pip install scp` or `pip3 install scp`) <-- Check with `pip --version` if it points to py2 or py3
+- see more package and version requirements at [cvp.avd.sh](https://cvp.avd.sh/en/stable/docs/installation/requirements/)
 - devices should run TerminAttr 1.15.3 (CVaaS requirement)
 - devices should run EOS 4.23+ for non-prod clusters and 4.22+ for prod clusters (CVaaS requirement)
 - all devices must have internet connectivity and be able to reach CVaaS, a quick ping test should be enough like below:
@@ -104,8 +104,12 @@ make all devies compliant.
 
 ## Disclaimer
 
-This is a proof-of-concept demo, highly recommended to take a backup before running the playbook.
+- This is a proof-of-concept demo, highly recommended to take a backup before running the playbook.
+- Tested with ansible-cvp `v3.3.1` and devel branch
 
+## Caveats
+
+- Due to [issue#508](https://github.com/aristanetworks/ansible-cvp/issues/508) in ansible-cvp `v3.4.0` due to schema differences between `cv_facts_v3` output  and `cv_container_v3` input the container topology creation will fail. Fixed in `v3.5.0`.
 
 ## TO-DO
 
