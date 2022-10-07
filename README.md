@@ -67,13 +67,17 @@ and inside the [terminattr.cfg](./terminattr.cfg) file
 
 This example is recommended for production.
 
-1. Generate service account token on CVaaS ([steps](#how-to-generate-service-accounts))
+1. Update the `./inventory/inventory.yaml` file with the right credentials and IPs/FQDNs
+
+2. Update `ansible.cfg` to point to the right folders for your `collections_paths` or just install ansible-cvp using ansible-galaxy and use that instead.
+
+3. Generate service account token on CVaaS ([steps](#how-to-generate-service-accounts))
 
 > NOTE The token should be copied and saved to a file that can later be referred to, in this example it's in `/tokens/cvaas.tok`.
 
-2. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/go178.tok`)
+4. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/go178.tok`)
 
-3. Export the tokens as env vars, e.g.:
+5. Export the tokens as env vars, e.g.:
 
 ```
 export CVAAS_TOKEN=`cat /tokens/cvaas.tok`
@@ -82,25 +86,26 @@ export ON_PREM_TOKEN=`cat /tokens/go178.tok`
 
 > Tip: Add them to your `.bashrc` or `.zshrc` to make them persistent and source them on the current terminal (`source ~/.zshrc`) or start a new session.
 
-4. Go to CVaaS UI and generate the TerminAttr config and build the new TerminAttr configuration to stream to both the existing on-prem cluster and CVaaS. An example can be found in the [TerminAttr most commonly used flags documentation](https://aristanetworks.force.com/AristaCommunity/s/article/terminattr-most-commonly-used-flags-and-sample-configurations) or in the [terminattr_multi_cluster.cfg](./terminattr_multi_cluster.cf) file
+6. Go to CVaaS UI and generate the TerminAttr config and build the new TerminAttr configuration to stream to both the existing on-prem cluster and CVaaS. An example can be found in the [TerminAttr most commonly used flags documentation](https://aristanetworks.force.com/AristaCommunity/s/article/terminattr-most-commonly-used-flags-and-sample-configurations) or in the [terminattr_multi_cluster.cfg](./terminattr_multi_cluster.cfg) file
 
 ![terminattr_config_cvaas](./media/cvaas_ta_onboarding_config.png)
 
-5. Run `ansible-playbook option2_terminattr_multi_cluster.yaml --tags build` to generate the TerminAttr onboarding tokens for both on-prem and CVaaS and to generate the `onprem_devices.yaml` inventory file
+7. Run `ansible-playbook option2_terminattr_multi_cluster.yaml --tags build` to generate the TerminAttr onboarding tokens for both on-prem and CVaaS and to generate the `onprem_devices.yaml` inventory file
 
-6. Run `ansible-playbook option2_terminattr_multi_cluster.yaml --tags deploy` to upload the tokens and reconfigure TerminAttr to stream to both clusters and wait for the devices to show up in the Undefined container on CVaaS UI.
+8. Run `ansible-playbook option2_terminattr_multi_cluster.yaml --tags deploy -i inventory` to upload the tokens and reconfigure TerminAttr to stream to both clusters and wait for the devices to show up in the Undefined container on CVaaS UI.
 
-7. Update the existing TerminAttr configlet with the new TerminAttr configuration on the on-prem CVP cluster, and assign it to all devices to match the running-configuration and 
-make all devies compliant.
+>NOTE At this stage you should see the devices in the Undefined Container on your CVaaS tenant and on the on-prem cluster in their target container and out of configuration compliance.
 
-8. Update the `./inventory/inventory.yaml` file with the right credentials and IPs/FQDNs
-
-9.  Update `ansible.cfg` to point to the right folders for your `collections_paths` or just install ansible-cvp using ansible-galaxy and use that instead.
+9. Make sure the `terminattr_multi_cluster.cfg` file is updated as well and contains the multi-cluster streaming configuration.
 
 10. Finally, run the playbook to migrate the containers, configlets, move the devices to their intended containers and assign the configlets to the containers and devices:
  `ansible-playbook option2_cvaas_migration.yaml -i inventory`
 
-11. Later when the on-prem servers will be decommissioned the TerminAttr configuration can be changed to stream only to CVaaS.
+> NOTE At this change you should have the configlets uploaded, the containers created and `Add Device` tasks created for all the devices to move to their target containers and configlets to be attached.
+
+11. Create a Change control from all the tasks, review and approve (there should be no config change).
+
+1.  Later when the on-prem servers will be decommissioned the TerminAttr configuration can be changed to stream only to CVaaS.
 
 ## Disclaimer
 
@@ -109,7 +114,7 @@ make all devies compliant.
 
 ## Caveats
 
-- Due to [issue#508](https://github.com/aristanetworks/ansible-cvp/issues/508) in ansible-cvp `v3.4.0` due to schema differences between `cv_facts_v3` output  and `cv_container_v3` input the container topology creation will fail. Fixed in `v3.5.0`.
+- Due to [issue#508](https://github.com/aristanetworks/ansible-cvp/issues/508) in ansible-cvp `v3.4.0` due to schema differences between `cv_facts_v3` output  and `cv_container_v3` input the container topology creation will fail. Will be fixed in `v3.5.0`.
 
 ## TO-DO
 

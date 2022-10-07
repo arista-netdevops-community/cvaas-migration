@@ -16,8 +16,8 @@ all:
           ansible_network_os: eos
           ansible_httpapi_port: 443
         cv_server:
-          ansible_httpapi_host: 10.83.12.178
-          ansible_host: 10.83.12.178
+          ansible_httpapi_host: 10.83.12.79
+          ansible_host: 10.83.12.79
           ansible_user: cvpadmin
           ansible_password: arastra
           ansible_connection: httpapi
