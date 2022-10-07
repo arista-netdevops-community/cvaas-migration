@@ -8,7 +8,7 @@
   vars:
     cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken # change the URL to the right CVaaS instance
     cvaas_token: "{{lookup('env', 'CVAAS_TOKEN')}}"
-    cvp_device_api: "https://10.83.12.178/cvpservice/inventory/devices?provisioned=true" # change the IP to the right CVP On-prem instance
+    cvp_device_api: "https://10.83.12.79/cvpservice/inventory/devices?provisioned=true" # change the IP to the right CVP On-prem instance
     cvp_token: "{{lookup('env', 'ON_PREM_TOKEN')}}"
   tasks:
   - name: 'Collect devices facts from {{inventory_hostname}}'
@@ -62,13 +62,31 @@
   hosts: cvaas
   connection: local
   gather_facts: no
+  vars:
+    CVP_CONFIGLETS:
+      terminattr_config_cvaas: "{{lookup('file', 'terminattr_multi_cluster.cfg')}}"
   tasks:
-  - name: "Push config to {{inventory_hostname}}"
+  - name: "Upload configlets to {{inventory_hostname}}"
     tags: [cvaas, phase2]
     arista.cvp.cv_configlet_v3:
       configlets: "{{hostvars['cv_server'].facts_devices.data.cvp_configlets}}"
       state: present
     delegate_to: cvaas
+  - name: "Upload new TerminAttr configlet to {{inventory_hostname}}"
+    tags: [cvaas, phase2]
+    arista.cvp.cv_configlet_v3:
+      configlets: "{{CVP_CONFIGLETS}}"
+      state: present
+    delegate_to: cvaas
+  - name: "Append TerminAttr config to device facts"
+    tags: [cvaas, phase2]
+    set_fact:
+      new_devices_var: |
+        {% set res = hostvars['cv_server'].facts_devices.data.cvp_devices -%}
+        {% for device in res -%}
+        {%     do device.configlets.append("terminattr_config_cvaas") -%}
+        {%- endfor %}
+        {{ res }}
   - name: "Generate container hierarchy"
     tags: [cvaas, phase2]
     arista.cvp.cv_container_v3:
