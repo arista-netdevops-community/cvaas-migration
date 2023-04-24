@@ -40,7 +40,7 @@
       device_inventory: "{{ device_inventory | default([]) + [item.ipAddress] }}"
     with_items: "{{ current_cvp_devices_api_result.content  }}"
   - name: Concatenating device_inventory
-    tags: [build, phase1]
+    tags: [build, phase1, devinv]
     set_fact:
       device_inventory_list: "{{ device_inventory | join('\n') }}"
   - name: "Building temporary device inventory"
