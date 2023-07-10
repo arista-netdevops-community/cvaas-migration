@@ -28,7 +28,7 @@
     documentation_dir: "documentation"
   tasks:
   - name: Create required output directories if not present
-    tags: [build, provision]
+    tags: [facts]
     file:
       path: "{{ item }}"
       state: directory
