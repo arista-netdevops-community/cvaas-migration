@@ -4,11 +4,11 @@
   connection: local
   gather_facts: no
   vars:
-    cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken # change the URL to the right CVaaS instance
+    cvaas_api: https://www.cv-staging.corp.arista.io/api/resources/admin.Enrollment/AddEnrollmentToken # change the URL to the right CVaaS instance
     cvaas_token: "{{lookup('env', 'CVAAS_TOKEN')}}"
-    cvp_device_api: "https://10.83.12.79/cvpservice/inventory/devices?provisioned=true" # change the IP to the right CVP On-prem instance
+    cvp_device_api: "https://192.0.2.79/cvpservice/inventory/devices?provisioned=true" # change the IP to the right CVP On-prem instance
     cvp_token: "{{lookup('env', 'ON_PREM_TOKEN')}}"
-    cvp_token_api: "https://10.83.12.79/cvpservice/enroll/createToken"
+    cvp_token_api: "https://192.0.2.79/cvpservice/enroll/createToken"
   tasks:
   - name: "Generating TerminAttr onboarding token on CVaaS instance"
     tags: [build]
@@ -20,7 +20,7 @@
         Cookie: "access_token={{ cvaas_token }}"
       validate_certs: no
       return_content: yes
-      body: '{"enrollmentToken": {"reenrollDevices": ["*"], "validFor": "720h"}}'
+      body: '{"enrollmentToken": {"reenrollDevices": ["*"], "validFor": "86400s"}}'
     register: cv_onboarding_token
     until: cv_onboarding_token.status == 200
     retries: 10
@@ -107,7 +107,7 @@
     ansible_httpapi_validate_certs: False
     ansible_network_os: eos
     ansible_httpapi_port: 443
-    ansible_python_interpreter: $(which python3) 
+    ansible_python_interpreter: $(which python3)
   tasks:
   - name: Copy on-prem token
     tags: [deploy]
@@ -126,6 +126,6 @@
         - "enable"
         - "config"
         - "daemon TerminAttr"
-        - "exec /usr/bin/TerminAttr -cvopt cvaas.addr=apiserver.cv-staging.corp.arista.io:443 -cvopt cvaas.auth=token-secure,/tmp/cv-onboarding-token -cvopt cvaas.vrf=MGMT  -cvopt dublin.addr=10.83.12.79:9910 -cvopt dublin.auth=token,/tmp/token -cvopt dublin.vrf=MGMT -smashexcludes=ale,flexCounter,hardware,kni,pulse,strata -ingestexclude=/Sysdb/cell/1/agent,/Sysdb/cell/2/agent -taillogs"
+        - "exec /usr/bin/TerminAttr -cvopt cvaas.addr=apiserver.cv-staging.corp.arista.io:443 -cvopt cvaas.auth=token-secure,/tmp/cv-onboarding-token -cvopt cvaas.vrf=MGMT  -cvopt dublin.addr=192.0.2.79:9910 -cvopt dublin.auth=token,/tmp/token -cvopt dublin.vrf=MGMT -smashexcludes=ale,flexCounter,hardware,kni,pulse,strata -ingestexclude=/Sysdb/cell/1/agent,/Sysdb/cell/2/agent -taillogs"
         - "shut"
         - "no shut"

@@ -7,7 +7,7 @@ all:
           ansible_httpapi_host: www.cv-staging.corp.arista.io
           ansible_host: www.cv-staging.corp.arista.io
           ansible_user: cvaas
-          ansible_password: "{{ lookup('file', '/Users/tamas/tokens/cvaas.tok')}}"
+          ansible_password: "{{ lookup('file', 'cvaas.tok')}}"
           ansible_become: True
           ansible_become_method: enable
           ansible_connection: httpapi

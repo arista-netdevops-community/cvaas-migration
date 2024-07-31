@@ -1,6 +1,6 @@
 # CVaaS Migration playbook example
 
-Migrate all devices, containers and configlets from CV on-prem to CVaaS. 
+Migrate all devices, containers and configlets from CV on-prem to CVaaS.
 The `cvaas_migration.yaml` playbook does the following:
 
 - collects cvp facts (devices, containers and configlets) from the on-prem CVP system and stores it in memory
@@ -18,10 +18,10 @@ The `cvaas_migration.yaml` playbook does the following:
 - python3 3.8+
 - [ansible-cvp](https://cvp.avd.sh)
   - `$ ansible-galaxy collection install arista.cvp`
-- [Minimum cvprac 1.0.7, recommended 1.3.1+](https://github.com/aristanetworks/cvprac/): `pip install cvprac>=1.3.1`
+- [Minimum cvprac 1.0.7, recommended 1.4.0+](https://github.com/aristanetworks/cvprac/): `pip install cvprac>=1.4.0`
 - scp (`pip install scp` or `pip3 install scp`) <-- Check with `pip --version` if it points to py2 or py3
 - see more package and version requirements at [cvp.avd.sh](https://cvp.avd.sh/en/stable/docs/installation/requirements/)
-- devices should run TerminAttr 1.15.3 (CVaaS requirement)
+- devices should run TerminAttr 1.19.5+ (CVaaS requirement)
 - devices should run EOS 4.23+ for non-prod clusters and 4.22+ for prod clusters (CVaaS requirement)
 - all devices must have internet connectivity and be able to reach CVaaS, a quick ping test should be enough like below:
 
@@ -32,8 +32,8 @@ ping vrf MGMT www.cv-staging.corp.arista.io
 
 ## Authentication Prerequisites
 
-CloudVision Service uses OAuth & SAML providers for user authentication. Users are created with a username and an email address, and the email address will be used for OAuth/SAML authentication. 
-To perform configuration changes in an EOS device using the CloudVision Service, the same user account must be in the device configuration unless you have AAA authentication enabled via Radius/TACACS+. 
+CloudVision Service uses OAuth & SAML providers for user authentication. Users are created with a username and an email address, and the email address will be used for OAuth/SAML authentication.
+To perform configuration changes in an EOS device using the CloudVision Service, the same user account must be in the device configuration unless you have AAA authentication enabled via Radius/TACACS+.
 
 For Eg: assuming `john.smith@company.com` is the email address used for OAuth authentication you need to have `john.smith` as a user in the EOS device (or in the RADIUS/TACACS+ server):
 
@@ -51,7 +51,7 @@ For example when using service accounts we would have the following:
 
 - on the CV UI the username in Users page and Service Accounts page would be john.smith
 - on EOS in the running config there would be either a local user: `username john.smith privilege 15 role <roleName> <nopassword/secret>` or one in TACACS/RADIUS
-- on ansible side in inventory.yaml the `ansible_user` has to be set to `cvaas` or `svc_account`, e.g.:  `ansible_user: cvaas` or `ansible_user: svc_account` 
+- on ansible side in inventory.yaml the `ansible_user` has to be set to `cvaas` or `svc_account`, e.g.:  `ansible_user: cvaas` or `ansible_user: svc_account`
   and `ansible_password` will reference the service account token, e.g.: `"{{ lookup('file', '/tokens/cvaas.tok')}}"`
 - reference: [ansible-cvp authentication](https://cvp.avd.sh/en/stable/docs/how-to/cvp-authentication/)
 
@@ -69,13 +69,13 @@ This example is more of a faster approach for lab environments
 > NOTE The token should be copied and saved to a file that can later be referred to, in this example it's in `/tokens/cvaas.tok`.
 > Please check the authentication requirements in [svcreqs](#a-note-on-service-accounts)
 
-2\. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/go178.tok`)
+2\. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/onprem.tok`)
 
 3\. Export the tokens as env vars, e.g.:
 
 ```shell
 export CVAAS_TOKEN=`cat /tokens/cvaas.tok`
-export ON_PREM_TOKEN=`cat /tokens/go178.tok`
+export ON_PREM_TOKEN=`cat /tokens/onprem.tok`
 ```
 
 > Tip: Add them to your `.bashrc` or `.zshrc` to make them persistent and source them on the current terminal (`source ~/.zshrc`) or start a new session.
@@ -107,13 +107,13 @@ This example is recommended for production.
 > NOTE The token should be copied and saved to a file that can later be referred to, in this example it's in `/tokens/cvaas.tok`.
 > Please check the authentication requirements in [svcreqs](#a-note-on-service-accounts)
 
-4\. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/go178.tok`)
+4\. Generate service account token on CV on-prem ([steps](#how-to-generate-service-accounts)), save it to a file (e.g.: `/tokens/onprem.tok`)
 
 5\. Export the tokens as env vars, e.g.:
 
 ```shell
 export CVAAS_TOKEN=`cat /tokens/cvaas.tok`
-export ON_PREM_TOKEN=`cat /tokens/go178.tok`
+export ON_PREM_TOKEN=`cat /tokens/onprem.tok`
 ```
 
 > Tip: Add them to your `.bashrc` or `.zshrc` to make them persistent and source them on the current terminal (`source ~/.zshrc`) or start a new session.
