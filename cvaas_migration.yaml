@@ -6,10 +6,10 @@
   connection: local
   gather_facts: no
   vars:
-    cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken
-    cvaas_token: "{{lookup('file', '/Users/tamas/tokens/cvaas.tok')}}"
-    cvp_device_api: "https://10.83.12.178/cvpservice/inventory/devices?provisioned=true"
-    cvp_token: "{{lookup('file', '/Users/tamas/tokens/go178.tok')}}"
+    cvaas_api: https://www.cv-staging.corp.arista.io/api/resources/admin.Enrollment/AddEnrollmentToken
+    cvaas_token: "{{lookup('file', 'cvaas.tok')}}"
+    cvp_device_api: "https://192.0.2.178/cvpservice/inventory/devices?provisioned=true"
+    cvp_token: "{{lookup('file', 'onprem.tok')}}"
   tasks:
   - name: 'Collect devices facts from {{inventory_hostname}}'
     tags: [facts]
@@ -72,7 +72,7 @@
         Cookie: "access_token={{ cvaas_token }}"
       validate_certs: no
       return_content: yes
-      body: '{"enrollmentToken": {"reenrollDevices": ["*"], "validFor": "720h"}}'
+      body: '{"enrollmentToken": {"reenrollDevices": ["*"], "validFor": "86400s"}}'
     register: cv_onboarding_token
     until: cv_onboarding_token.status == 200
     retries: 10

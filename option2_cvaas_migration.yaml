@@ -5,11 +5,6 @@
   hosts: cv_server
   connection: local
   gather_facts: no
-  vars:
-    cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken # change the URL to the right CVaaS instance
-    cvaas_token: "{{lookup('env', 'CVAAS_TOKEN')}}"
-    cvp_device_api: "https://10.83.12.79/cvpservice/inventory/devices?provisioned=true" # change the IP to the right CVP On-prem instance
-    cvp_token: "{{lookup('env', 'ON_PREM_TOKEN')}}"
   tasks:
   - name: 'Collect devices facts from {{inventory_hostname}}'
     tags: [facts, phase1]

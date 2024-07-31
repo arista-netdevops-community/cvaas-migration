@@ -3,11 +3,6 @@
   hosts: cv_server
   connection: local
   gather_facts: no
-  vars:
-    cvaas_api: https://www.cv-staging.corp.arista.io/api/v3/services/admin.Enrollment/AddEnrollmentToken
-    cvaas_token: "{{lookup('file', '/Users/tamas/tokens/cvaas.tok')}}"
-    cvp_device_api: "https://10.83.12.79/cvpservice/inventory/devices?provisioned=true"
-    cvp_token: "{{lookup('file', '/Users/tamas/tokens/go79.tok')}}"
   tasks:
   - name: 'Collect devices facts from {{inventory_hostname}}'
     tags: [facts]
@@ -20,7 +15,7 @@
   connection: local
   gather_facts: no
   vars:
-     CVP_CONTAINERS: 
+     CVP_CONTAINERS:
         TP_FABRIC:
             configlets:
             - SelfSignedSSLProfile
